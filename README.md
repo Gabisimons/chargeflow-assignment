@@ -202,6 +202,7 @@ payment_type  total_txn_amount  total_cb_amount  chargeback_rate
 
 PAYMENT FAILURE RATE: 34.69%
 ```
+</details>
 
 ## 🔮 Future Improvements
 * **Schema Registry:** Integrate with **AWS Glue Schema Registry** to manage schema evolution safely.
