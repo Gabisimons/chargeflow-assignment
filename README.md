@@ -18,32 +18,34 @@ In a production environment (AWS), this pipeline is designed to run as a consume
 
 ```mermaid
 graph LR
+
     subgraph "Ingestion Layer"
         API[API Gateway] --> P[Producer Service]
         P --> MSK[("Amazon MSK\nKafka Topic")]
     end
 
-    subgraph "Compute Layer (EKS Cluster)"
-        MSK --> C1[Python Consumer Pods]
-        C1 --> KEDA[KEDA Autoscaler]
-        KEDA -.->|Scale based on Lag| C1
-        note["FinOps: Stateless Pods\non Spot Instances"] -.-> C1
-    end
+subgraph "Compute Layer (EKS Cluster)"
+    MSK --> C1[Python Consumer Pods]
+    C1 --> KEDA[KEDA Autoscaler]
+    KEDA -.->|Scale based on Lag| C1
+    note["FinOps: Stateless Pods\non Spot Instances"] -.-> C1
+end
 
-    subgraph "Resilience & Quality"
-        C1 -->|Valid Data| S3[("S3 Data Lake\nParquet")]
-        C1 -->|Invalid Data| DLQ["Dead Letter Queue\n(S3/SQS)"]
-    end
+subgraph "Resilience & Quality"
+    C1 -->|Valid Data| S3[("S3 Data Lake\nParquet")]
+    C1 -->|Invalid Data| DLQ["Dead Letter Queue\n(S3/SQS)"]
+end
 
-    subgraph "Analytics"
-        S3 --> Athena[AWS Athena]
-        Athena --> Dash[QuickSight / BI]
-    end
+subgraph "Analytics"
+    S3 --> Athena[AWS Athena]
+    Athena --> Dash[QuickSight / BI]
+end
 
-    classDef aws fill:#FF9900,stroke:#232F3E,color:white;
-    class MSK,C1,S3,Athena,API,DLQ aws;
+classDef aws fill:#FF9900,stroke:#232F3E,color:white;
+class MSK,C1,S3,Athena,API,DLQ aws;
+```
 
-    ## 🚀 Key Engineering Decisions
+## 🚀 Key Engineering Decisions
 
 ### 1. Shift-Left Data Validation (Pydantic)
 Instead of letting bad data propagate to the Data Lake, strict validation is applied at the ingestion point using **Pydantic Models**.
@@ -79,9 +81,11 @@ docker run --rm chargeflow-assignment python -m src.pipeline
 
 # 3. Run the test suite
 docker run --rm chargeflow-assignment pytest -v
+```
 
-##Option B: Local Setup
-Bash
+## Option B: Local Setup
+
+```bash
 # 1. Create virtual environment
 python -m venv .venv
 source .venv/bin/activate  # or .venv\Scripts\activate on Windows
@@ -94,6 +98,7 @@ python src/generate_data.py
 
 # 4. Run the pipeline
 python src/pipeline.py
+```
 
 ## 🧪 Testing Strategy
 Comprehensive testing is implemented using `pytest` with **30+ unit tests**:
