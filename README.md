@@ -204,6 +204,26 @@ PAYMENT FAILURE RATE: 34.69%
 ```
 </details>
 
+## 🛡️ Observability & Monitoring Strategy
+
+In a production environment, visibility is key. The following monitoring stack is designed to ensure high availability and rapid incident response (MTTR):
+
+### 1. Structured Logging (Datadog/ELK)
+* **Implementation:** The current Python `logging` module would be configured to output **JSON-formatted logs**.
+* **Context:** Every log entry would inject trace IDs (`correlation_id`) to allow tracing a transaction across microservices (Ingestion → Kafka → Processing → S3).
+
+### 2. Key Metrics (Datadog/Prometheus)
+Instead of just printing results, the pipeline would emit custom metrics:
+* `chargeflow.pipeline.transactions.volume` (Counter)
+* `chargeflow.pipeline.validation.failure_rate` (Gauge)
+* `chargeflow.kafka.consumer_lag` (Gauge - **Critical for scaling**)
+
+### 3. Alerting Policy (PagerDuty/Slack)
+Alerts would be configured based on SLIs (Service Level Indicators):
+* **Critical:** `Payment Failure Rate > 15%` (Potential provider outage).
+* **Critical:** `DLQ Size > 1000 records` (Schema drift or attack).
+* **Warning:** `Consumer Lag > 5 minutes` (Trigger HPA/KEDA to scale up pods).
+
 ## 🔮 Future Improvements
 * **Schema Registry:** Integrate with **AWS Glue Schema Registry** to manage schema evolution safely.
 * **Distributed Processing:** Migrate `pandas` transformation to **Apache Spark** or **DuckDB** if data volume exceeds memory limits.
