@@ -20,19 +20,19 @@ In a production environment (AWS), this pipeline is designed to run as a consume
 graph LR
     subgraph "Ingestion Layer"
         API[API Gateway] --> P[Producer Service]
-        P --> MSK[(Amazon MSK\nKafka Topic)]
+        P --> MSK[("Amazon MSK\nKafka Topic")]
     end
 
     subgraph "Compute Layer (EKS Cluster)"
         MSK --> C1[Python Consumer Pods]
         C1 --> KEDA[KEDA Autoscaler]
         KEDA -.->|Scale based on Lag| C1
-        note[FinOps: Stateless Pods\non Spot Instances] -.-> C1
+        note["FinOps: Stateless Pods\non Spot Instances"] -.-> C1
     end
 
     subgraph "Resilience & Quality"
-        C1 -->|Valid Data| S3[(S3 Data Lake\nParquet)]
-        C1 -->|Invalid Data| DLQ[Dead Letter Queue\n(S3/SQS)]
+        C1 -->|Valid Data| S3[("S3 Data Lake\nParquet")]
+        C1 -->|Invalid Data| DLQ["Dead Letter Queue\n(S3/SQS)"]
     end
 
     subgraph "Analytics"
